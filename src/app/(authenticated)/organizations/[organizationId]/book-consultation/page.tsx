@@ -1,30 +1,25 @@
 'use client'
 
-import { useState } from 'react'
-import {
-  Typography,
-  Form,
-  Input,
-  DatePicker,
-  TimePicker,
-  Button,
-  Select,
-} from 'antd'
-import {
-  CalendarOutlined,
-  ClockCircleOutlined,
-  CommentOutlined,
-  PetOutlined,
-} from '@ant-design/icons'
-const { Title, Paragraph } = Typography
-const { TextArea } = Input
 import { useUserContext } from '@/core/context'
-import { useRouter, useParams } from 'next/navigation'
-import { useUploadPublic } from '@/core/hooks/upload'
-import { useSnackbar } from 'notistack'
-import dayjs from 'dayjs'
 import { Api } from '@/core/trpc'
 import { PageLayout } from '@/designSystem'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faDog } from '@fortawesome/free-solid-svg-icons'
+import {
+  Button,
+  DatePicker,
+  Form,
+  Input,
+  Select,
+  TimePicker,
+  Typography,
+} from 'antd'
+import dayjs from 'dayjs'
+import { useParams, useRouter } from 'next/navigation'
+import { useSnackbar } from 'notistack'
+import { useState } from 'react'
+const { Title, Paragraph } = Typography
+const { TextArea } = Input
 
 export default function ConsultationBookingPage() {
   const router = useRouter()
@@ -96,7 +91,7 @@ export default function ConsultationBookingPage() {
             <Select placeholder="Select your pet">
               {pets?.map(pet => (
                 <Select.Option key={pet.id} value={pet.id}>
-                  <PetOutlined /> {pet.name} ({pet.species})
+                  <FontAwesomeIcon icon={faDog} /> {pet.name} ({pet.species})
                 </Select.Option>
               ))}
             </Select>
@@ -110,7 +105,7 @@ export default function ConsultationBookingPage() {
             <DatePicker
               style={{ width: '100%' }}
               onChange={date => setSelectedDate(date)}
-              prefix={<CalendarOutlined />}
+              // prefix={<CalendarOutlined />}
             />
           </Form.Item>
 
@@ -123,7 +118,7 @@ export default function ConsultationBookingPage() {
               style={{ width: '100%' }}
               format="HH:mm"
               onChange={time => setSelectedTime(time)}
-              prefix={<ClockCircleOutlined />}
+              // prefix={<ClockCircleOutlined />}
             />
           </Form.Item>
 
@@ -140,7 +135,7 @@ export default function ConsultationBookingPage() {
             <TextArea
               rows={4}
               placeholder="Describe your pet's behavioral issues or concerns"
-              prefix={<CommentOutlined />}
+              // prefix={<CommentOutlined />}
             />
           </Form.Item>
 
