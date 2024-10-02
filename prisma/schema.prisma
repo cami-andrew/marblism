@@ -170,14 +170,16 @@ model Account {
 
 /// @@allow('all', true)
 model RagVector {
-  id        String   @id() @default(uuid())
-  key       String
-  url       String
-  tags      String[] @default([])
+  id          String   @id() @default(uuid())
+  key         String
+  url         String
+  tags        String[] @default([])
   /// @omit
-  vectors   Bytes?
+  vectors     Bytes?
   /// @omit
-  documents Bytes?
+  documents   Bytes?
+  dateCreated DateTime @default(now())
+  content     String?
 }
 
 /// @@allow('all', auth().id == user.id)

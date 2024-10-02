@@ -1,16 +1,14 @@
 'use client'
 
-import { useState } from 'react'
-import { Typography, Input, Button, List, Card, Form, Space } from 'antd'
-import { CommentOutlined, PlusOutlined } from '@ant-design/icons'
-const { Title, Text, Paragraph } = Typography
 import { useUserContext } from '@/core/context'
-import { useRouter, useParams } from 'next/navigation'
-import { useUploadPublic } from '@/core/hooks/upload'
-import { useSnackbar } from 'notistack'
-import dayjs from 'dayjs'
 import { Api } from '@/core/trpc'
 import { PageLayout } from '@/designSystem'
+import { CommentOutlined, PlusOutlined } from '@ant-design/icons'
+import { Button, Card, Form, Input, List, Space, Typography } from 'antd'
+import { useParams, useRouter } from 'next/navigation'
+import { useSnackbar } from 'notistack'
+import { useState } from 'react'
+const { Title, Text, Paragraph } = Typography
 
 export default function CommunityForumPage() {
   const router = useRouter()
@@ -76,7 +74,7 @@ export default function CommunityForumPage() {
         data: {
           key: post.key,
           tags: post.tags,
-          content: JSON.stringify({ ...postContent, replies: updatedReplies }),
+          content: { ...postContent, replies: updatedReplies },
         },
       })
       setReplyContent('')
