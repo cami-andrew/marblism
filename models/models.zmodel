@@ -1,0 +1,206 @@
+
+
+model Pet {
+
+    id                String        @id @default(uuid())  
+    name            String          
+    species      String          
+    breed          String?          
+    dateOfBirth  String?          
+    imageUrl    String?          
+
+petOwners  PetOwner[]  @relation("pet")  
+      dateCreated DateTime @default(now())
+      dateUpdated DateTime @updatedAt  @default(now())
+      @@allow("all", true)
+}
+
+model PsychologicalTest {
+
+    id                String        @id @default(uuid())  
+    name            String          
+    description  String?          
+    createdAt  String          
+
+testResultsAsTest  TestResult[]  @relation("test")  
+      dateCreated DateTime @default(now())
+      dateUpdated DateTime @updatedAt  @default(now())
+      @@allow("all", true)
+}
+
+model PetOwner {
+
+    id                String        @id @default(uuid())  
+
+userId        String          
+    user            User?            @relation(fields: [userId], references: [id], name:"user")  
+    petId          String          
+    pet              Pet?              @relation(fields: [petId], references: [id], name:"pet")  
+ 
+      dateCreated DateTime @default(now())
+      dateUpdated DateTime @updatedAt  @default(now())
+      @@allow("all", true)
+}
+
+model TestResult {
+
+    id                String        @id @default(uuid())  
+    score          Float?            
+    completedAt  String          
+
+userId        String          
+    user            User?            @relation(fields: [userId], references: [id], name:"user")  
+    testId        String          
+    test            PsychologicalTest?  @relation(fields: [testId], references: [id], name:"test")  
+ 
+      dateCreated DateTime @default(now())
+      dateUpdated DateTime @updatedAt  @default(now())
+      @@allow("all", true)
+}
+
+model TrainingPlan {
+
+    id                String        @id @default(uuid())  
+    name            String          
+    description  String?          
+    startDate  String?          
+    endDate      String?          
+    status        String?          
+
+userId        String          
+    user            User?            @relation(fields: [userId], references: [id], name:"user")  
+ 
+      dateCreated DateTime @default(now())
+      dateUpdated DateTime @updatedAt  @default(now())
+      @@allow("all", true)
+}
+
+model Organization {
+    id               String             @id @default(uuid())
+    name             String
+    pictureUrl       String?            @default('https://i.imgur.com/BgkFiid.jpeg')
+    
+    stripeCustomerId String?
+    
+    dateCreated      DateTime           @default(now())
+    dateUpdated      DateTime           @updatedAt @default(now())
+    roles            OrganizationRole[]
+
+@@allow('all', auth().globalRole == 'ADMIN')
+    @@allow('all', roles?[user == auth() && name == 'owner'])
+    @@allow('read', roles?[user == auth()])
+}
+model OrganizationRole {
+    id             String       @id @default(uuid())
+    name           String
+    dateCreated    DateTime     @default(now())
+    dateUpdated    DateTime     @updatedAt @default(now())
+
+    userId         String
+    user           User         @relation(fields: [userId], references: [id])
+    organizationId String
+    organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+    @@allow('all', auth().globalRole == 'ADMIN')
+    @@allow('all', organization.roles?[user == auth() && name == 'owner'])
+    @@allow('create', organization.roles?[user == auth()] && name != 'owner')
+    @@allow('read', organization.roles?[user == auth()])
+    @@allow('delete', auth() == user)
+}
+
+enum UserStatus {
+    INVITED
+    VERIFIED
+}
+
+model User {
+    id                String             @id @default(uuid())
+    name              String?
+    email             String?            @unique
+    pictureUrl        String?            @default('https://i.imgur.com/ZdJSK3Y.jpeg')
+    tokenInvitation   String?
+    emailVerified     Boolean?
+    
+    stripeCustomerId  String?
+    
+    status            UserStatus         @default(VERIFIED)
+
+    // this is the role of the user for the application
+    globalRole        String             @default('USER')
+    password          String?            @password @omit
+    dateCreated       DateTime           @default(now())
+    dateUpdated       DateTime           @updatedAt @default(now())
+    accounts          Account[]
+    sessions          Session[]
+    
+    organizationRoles OrganizationRole[]
+
+pushNotifications PushNotification[] @relation("user")
+
+petOwners  PetOwner[]  @relation("user")  
+        testResults  TestResult[]  @relation("user")  
+        trainingPlans  TrainingPlan[]  @relation("user")  
+
+@@auth()
+    @@allow("all", auth().id == this.id)
+    @@allow('all', auth().globalRole == 'ADMIN')
+
+    //we only allow that user to register if they don't create an admin role
+    @@allow("create", globalRole != 'ADMIN')
+    @@allow("read", true)
+}
+
+model PushNotification {
+    id           String   @id @default(uuid())
+    endpoint     String
+    subscription String
+    dateCreated  DateTime @default(now())
+    dateUpdated  DateTime @updatedAt @default(now())
+
+    userId       String
+    user         User     @relation(fields: [userId], references: [id], name: 'user')
+
+@@allow("all", true)
+}
+
+model Account {
+    id                       String  @id @default(uuid())
+    userId                   String
+    type                     String
+    provider                 String
+    providerAccountId        String
+    refresh_token            String? // @db.Text
+    access_token             String? // @db.Text
+    expires_at               Int?
+    token_type               String?
+    scope                    String?
+    id_token                 String? // @db.Text
+    session_state            String?
+    user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+    refresh_token_expires_in Int?
+
+    @@unique([provider, providerAccountId])
+
+    @@allow("all", auth().id == user.id)
+}
+
+model RagVector {
+    id        String   @id @default(uuid())
+    key       String
+    url       String
+    tags      String[] @default([])
+    vectors   Bytes?   @omit
+    documents Bytes?   @omit
+
+@@allow("all", true)
+}
+
+model Session {
+    id           String   @id @default(uuid())
+    sessionToken String   @unique
+    userId       String
+    expires      DateTime
+    user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@allow("all", auth().id == user.id)
+}
